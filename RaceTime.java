@@ -1,279 +1,209 @@
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.*;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.Scanner;
 
 public class RaceTime {
-    private static final String PASSWORD = "clyderunners";
-    private static final String FILENAME = "race-results-1.txt";
-    private static final String FASTEST_FILE = "fastest-time.txt";
-    private static final String SLOWEST_FILE = "slowest-time.txt";
-    private static final String SEARCH_FILE = "search-result.txt";
-    private static final String OCCURRENCE_FILE = "time-occurrence.txt";
+    public static File fileName;
+    public static Scanner in = new Scanner(System.in);
+    public static PrintWriter out;
+    public static String[][] raceTimes = new String[16][3];
 
-    public static void main(String[] args) {
-        Scanner input = new Scanner(System.in);
-        String password;
-        System.out.print("Please enter the password: ");
-        password = input.nextLine();
+    public static void main(String[] args) throws FileNotFoundException {
+        String password = "clyderunners";
+        int fail = 3;
 
-        if (!password.equals(PASSWORD)) {
-            System.out.println("Incorrect password.");
-            return;
-        }
-
-        int choice;
         do {
-            displayMenu();
-            System.out.print("Enter your choice: ");
-            choice = input.nextInt();
-            input.nextLine(); // Consume the newline character after reading the choice
-
-            switch (choice) {
-                case 1:
-                    readAndDisplayFile();
-                    break;
-                case 2:
-                    sortAndPrintTimes();
-                    break;
-                case 3:
-                    findAndPrintFastestTime();
-                    break;
-                case 4:
-                    findAndPrintSlowestTime();
-                    break;
-                case 5:
-                    searchTime();
-                    break;
-                case 6:
-                    timeOccurrence();
-                    break;
-                case 7:
-                    System.out.println("Exiting program...");
-                    break;
-                default:
-                    System.out.println("Invalid choice.");
+            System.out.println("Welcome to Glasgow Clyde Runners Club.");
+            System.out.println("Please enter your password to continue: ");
+            String login = in.nextLine();
+            if (login.equals(password)) {
+                System.out.println("Password Validated");
+                menu();
+            } else {
+                fail--;
+                System.out.println("Your Password is incorrect");
+                System.out.println("You have: " + fail + " attempts left.");
             }
-        } while (choice != 7);
+        } while (fail != 0);
+
+        System.out.println("Number of attempts exceeded. You are now locked out.");
+        System.exit(0);
     }
 
-    private static void displayMenu() {
-        System.out.println("Menu:");
-        System.out.println("1. Read and Display File");
-        System.out.println("2. Sort and Print Recorded Times");
-        System.out.println("3. Find and Print Fastest Time");
-        System.out.println("4. Find and Print the Slowest Time");
-        System.out.println("5. Search");
-        System.out.println("6. Time Occurrence");
-        System.out.println("7. Exit Program");
+    public static void menu() throws FileNotFoundException {
+        int option;
+
+        do {
+            System.out.println("\nPlease choose from the following options: ");
+            System.out.println("1. Read and Display File");
+            System.out.println("2. Sort and Print Recorded Times");
+            System.out.println("3. Find and Print Fastest Time");
+            System.out.println("4. Find and Print the Slowest Time");
+            System.out.println("5. Search");
+            System.out.println("6. Time Occurrence");
+            System.out.println("7. Exit Program");
+            option = in.nextInt();
+
+            if (option == 1) {
+                readAndDisplayFile();
+            } else if (option == 2) {
+                sortAndPrintTimes();
+            } else if (option == 3) {
+                findAndPrintFastestTime();
+            } else if (option == 4) {
+                findAndPrintSlowestTime();
+            } else if (option == 5) {
+                searchTime();
+            } else if (option == 6) {
+                timeOccurrence();
+            } else if (option == 7) {
+                in.close();
+                System.out.println("Thank you for using Glasgow Clyde Runners Club. Goodbye");
+                System.exit(0);
+            }
+        } while (option != 7);
     }
 
-    private static void readAndDisplayFile() {
-        try (Scanner fileScanner = new Scanner(new File(FILENAME))) {
-            int numRows = 0;
-            while (fileScanner.hasNextLine()) {
-                fileScanner.nextLine();
-                numRows++;
-            }
+    public static void readAndDisplayFile() throws FileNotFoundException {
+        String fileName = "race-results-1.txt";
+        File file = new File(fileName);
+        Scanner fileScanner = new Scanner(file);
 
-            String[][] runners = new String[numRows][3];
+        int index = 0;
+        while (fileScanner.hasNextLine()) {
+            String line = fileScanner.nextLine();
+            String[] parts = line.split(" ");
+            raceTimes[index] = parts;
+            index++;
+        }
+        fileScanner.close();
 
-            fileScanner.close();
-            Scanner scanner = new Scanner(new File(FILENAME));
-            for (int i = 0; i < numRows; i++) {
-                runners[i][0] = scanner.next();
-                runners[i][1] = scanner.next();
-                runners[i][2] = scanner.nextLine().trim();
-            }
-
-            System.out.println("Runners:");
-            for (String[] runner : runners) {
-                System.out.println(runner[0] + " " + runner[1] + " " + runner[2]);
-            }
-        } catch (IOException e) {
-            System.out.println("Error reading file: " + e.getMessage());
+        System.out.println("Race Times:");
+        for (String[] time : raceTimes) {
+            System.out.println(Arrays.toString(time));
         }
     }
 
-    private static void sortAndPrintTimes() {
-        try (Scanner scanner = new Scanner(new File(FILENAME))) {
-            List<Integer> times = new ArrayList<>();
+    public static void sortAndPrintTimes() throws FileNotFoundException {
+        String[][] sortedTimes = raceTimes.clone();
+        boolean sorted;
 
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] parts = line.split(" ");
-                if (parts.length == 3) {
-                    int time = Integer.parseInt(parts[2]);
-                    times.add(time);
+        for (int i = 0; i < sortedTimes.length - 1; i++) {
+            sorted = true;
+            for (int j = 0; j < sortedTimes.length - i - 1; j++) {
+                int time1 = Integer.parseInt(sortedTimes[j][2]);
+                int time2 = Integer.parseInt(sortedTimes[j + 1][2]);
+
+                if (time1 > time2) {
+                    String[] temp = sortedTimes[j];
+                    sortedTimes[j] = sortedTimes[j + 1];
+                    sortedTimes[j + 1] = temp;
+                    sorted = false;
                 }
             }
-
-            // Sort the times in ascending order
-            Collections.sort(times);
-
-            // Create a new file for sorted times
-            File sortedFile = new File("sorted-times.txt");
-            try (FileWriter writer = new FileWriter(sortedFile)) {
-                // Write the sorted times to the file
-                for (int time : times) {
-                    writer.write(time + "\n");
-                }
-                System.out.println("Sorted times have been written to sorted-times.txt.");
-            } catch (IOException e) {
-                System.out.println("Error writing to file: " + e.getMessage());
+            if (sorted) {
+                break;
             }
-
-            // Print the sorted times to the console
-            System.out.println("Sorted Times:");
-            for (int time : times) {
-                System.out.println(time);
-            }
-        } catch (IOException e) {
-            System.out.println("Error reading file: " + e.getMessage());
         }
+
+        System.out.println("Sorted Recorded Times:");
+        for (String[] time : sortedTimes) {
+            System.out.println(Arrays.toString(time));
+        }
+
+        PrintWriter writer = new PrintWriter("sorted_times.txt");
+        for (String[] time : sortedTimes) {
+            writer.println(Arrays.toString(time));
+        }
+        writer.close();
     }
 
-    private static void findAndPrintFastestTime() {
-        try (Scanner scanner = new Scanner(new File(FILENAME))) {
-            int fastestTime = Integer.MAX_VALUE;
-            String fastestRunner = "";
+    public static void findAndPrintFastestTime() throws FileNotFoundException {
+        int fastestTime = Integer.MAX_VALUE;
+        String fastestName = "";
 
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] parts = line.split(" ");
-                if (parts.length == 3) {
-                    String runner = parts[0] + " " + parts[1];
-                    int time = Integer.parseInt(parts[2]);
-
-                    if (time < fastestTime) {
-                        fastestTime = time;
-                        fastestRunner = runner;
-                    }
-                }
+        for (String[] time : raceTimes) {
+            int raceTime = Integer.parseInt(time[2]);
+            if (raceTime < fastestTime) {
+                fastestTime = raceTime;
+                fastestName = time[0] + " " + time[1];
             }
-
-            // Write the fastest time to a new file
-            File fastestFile = new File(FASTEST_FILE);
-            try (FileWriter writer = new FileWriter(fastestFile)) {
-                writer.write("Fastest time: " + fastestTime + "\n");
-                writer.write("Runner: " + fastestRunner + "\n");
-                System.out.println("Fastest time and runner have been written to " + FASTEST_FILE + ".");
-            } catch (IOException e) {
-                System.out.println("Error writing to file: " + e.getMessage());
-            }
-
-            System.out.println("Fastest time: " + fastestTime);
-            System.out.println("Runner: " + fastestRunner);
-        } catch (IOException e) {
-            System.out.println("Error reading file: " + e.getMessage());
         }
+
+        System.out.println("Fastest Recorded Time: " + fastestTime + " seconds (" + fastestName + ")");
+
+        PrintWriter writer = new PrintWriter("fastest_time.txt");
+        writer.println("Fastest Recorded Time: " + fastestTime + " seconds (" + fastestName + ")");
+        writer.close();
     }
 
-    private static void findAndPrintSlowestTime() {
-        try (Scanner scanner = new Scanner(new File(FILENAME))) {
-            int slowestTime = Integer.MIN_VALUE;
-            String slowestRunner = "";
+    public static void findAndPrintSlowestTime() throws FileNotFoundException {
+        int slowestTime = Integer.MIN_VALUE;
+        String slowestName = "";
 
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] parts = line.split(" ");
-                if (parts.length == 3) {
-                    String runner = parts[0] + " " + parts[1];
-                    int time = Integer.parseInt(parts[2]);
-
-                    if (time > slowestTime) {
-                        slowestTime = time;
-                        slowestRunner = runner;
-                    }
-                }
+        for (String[] time : raceTimes) {
+            int raceTime = Integer.parseInt(time[2]);
+            if (raceTime > slowestTime) {
+                slowestTime = raceTime;
+                slowestName = time[0] + " " + time[1];
             }
-
-            // Write the slowest time to a new file
-            File slowestFile = new File(SLOWEST_FILE);
-            try (FileWriter writer = new FileWriter(slowestFile)) {
-                writer.write("Slowest time: " + slowestTime + "\n");
-                writer.write("Runner: " + slowestRunner + "\n");
-                System.out.println("Slowest time and runner have been written to " + SLOWEST_FILE + ".");
-            } catch (IOException e) {
-                System.out.println("Error writing to file: " + e.getMessage());
-            }
-
-            System.out.println("Slowest time: " + slowestTime);
-            System.out.println("Runner: " + slowestRunner);
-        } catch (IOException e) {
-            System.out.println("Error reading file: " + e.getMessage());
         }
+
+        System.out.println("Slowest Recorded Time: " + slowestTime + " seconds (" + slowestName + ")");
+
+        PrintWriter writer = new PrintWriter("slowest_time.txt");
+        writer.println("Slowest Recorded Time: " + slowestTime + " seconds (" + slowestName + ")");
+        writer.close();
     }
 
-    private static void searchTime() {
-        try (Scanner scanner = new Scanner(new File(FILENAME))) {
-            Scanner input = new Scanner(System.in);
-            System.out.print("Enter a time (seconds): ");
-            int searchTime = input.nextInt();
-            boolean found = false;
+    public static void searchTime() throws FileNotFoundException {
+        System.out.println("Enter a time (seconds):");
+        int searchTime = in.nextInt();
+        boolean found = false;
+        String foundNames = "";
 
-            // Create a new file for search results
-            File searchFile = new File(SEARCH_FILE);
-            try (FileWriter writer = new FileWriter(searchFile)) {
-                while (scanner.hasNextLine()) {
-                    String line = scanner.nextLine();
-                    String[] parts = line.split(" ");
-                    if (parts.length == 3) {
-                        String runner = parts[0] + " " + parts[1];
-                        int time = Integer.parseInt(parts[2]);
-
-                        if (time == searchTime) {
-                            writer.write("Runner: " + runner + "\n");
-                            found = true;
-                        }
-                    }
-                }
-                if (!found) {
-                    writer.write("Time not found.");
-                }
-                System.out.println("Search results have been written to " + SEARCH_FILE + ".");
-            } catch (IOException e) {
-                System.out.println("Error writing to file: " + e.getMessage());
+        for (String[] time : raceTimes) {
+            int raceTime = Integer.parseInt(time[2]);
+            if (raceTime == searchTime) {
+                found = true;
+                foundNames += time[0] + " " + time[1] + ", ";
             }
-
-            if (!found) {
-                System.out.println("Time not found.");
-            }
-        } catch (IOException e) {
-            System.out.println("Error reading file: " + e.getMessage());
         }
+
+        if (found) {
+            foundNames = foundNames.substring(0, foundNames.length() - 2); // Remove the trailing comma and space
+            System.out.println("Time " + searchTime + " found for: " + foundNames);
+        } else {
+            System.out.println("Time " + searchTime + " not found");
+        }
+
+        PrintWriter writer = new PrintWriter("search_result.txt");
+        if (found) {
+            writer.println("Time " + searchTime + " found for: " + foundNames);
+        } else {
+            writer.println("Time " + searchTime + " not found");
+        }
+        writer.close();
     }
 
-    private static void timeOccurrence() {
-        try (Scanner scanner = new Scanner(new File(FILENAME))) {
-            Scanner input = new Scanner(System.in);
-            System.out.print("Enter a time (seconds): ");
-            int searchTime = input.nextInt();
-            int occurrences = 0;
+    public static void timeOccurrence() throws FileNotFoundException {
+        System.out.println("Enter a time (seconds):");
+        int searchTime = in.nextInt();
+        int occurrence = 0;
 
-            // Create a new file for occurrence count
-            File occurrenceFile = new File(OCCURRENCE_FILE);
-            try (FileWriter writer = new FileWriter(occurrenceFile)) {
-                while (scanner.hasNextLine()) {
-                    String line = scanner.nextLine();
-                    String[] parts = line.split(" ");
-                    if (parts.length == 3) {
-                        int time = Integer.parseInt(parts[2]);
-                        if (time == searchTime) {
-                            occurrences++;
-                        }
-                    }
-                }
-
-                writer.write("Occurrences: " + occurrences);
-                System.out.println("Occurrences have been written to " + OCCURRENCE_FILE + ".");
-            } catch (IOException e) {
-                System.out.println("Error writing to file: " + e.getMessage());
+        for (String[] time : raceTimes) {
+            int raceTime = Integer.parseInt(time[2]);
+            if (raceTime == searchTime) {
+                occurrence++;
             }
-
-            System.out.println("Occurrences: " + occurrences);
-        } catch (IOException e) {
-            System.out.println("Error reading file: " + e.getMessage());
         }
+
+        System.out.println("Time Occurrence: " + occurrence);
+
+        PrintWriter writer = new PrintWriter("time_occurrence.txt");
+        writer.println("Time Occurrence: " + occurrence);
+        writer.close();
     }
 }
