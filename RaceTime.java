@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class RaceTime {
@@ -173,7 +174,7 @@ public class RaceTime {
         }
 
         if (found) {
-            foundNames = foundNames.substring(0, foundNames.length() - 2); // Remove the trailing comma and space
+            foundNames = foundNames.substring(0, foundNames.length() - 2);
             System.out.println("Time " + searchTime + " found for: " + foundNames);
         } else {
             System.out.println("Time " + searchTime + " not found");
@@ -190,20 +191,39 @@ public class RaceTime {
 
     public static void timeOccurrence() throws FileNotFoundException {
         System.out.println("Enter a time (seconds):");
-        int searchTime = in.nextInt();
+        int searchTime;
+        try {
+            searchTime = in.nextInt();
+        } catch (InputMismatchException e) {
+            System.out.println("Invalid time entered");
+            in.nextLine();
+            return; // Exit the method
+        }
         int occurrence = 0;
-
+        String foundNames = "";
+    
         for (String[] time : raceTimes) {
             int raceTime = Integer.parseInt(time[2]);
             if (raceTime == searchTime) {
                 occurrence++;
+                foundNames += time[0] + " " + time[1] + ", ";
             }
         }
-
-        System.out.println("Time Occurrence: " + occurrence);
-
+    
+        if (occurrence > 0) {
+            foundNames = foundNames.substring(0, foundNames.length() - 2);
+            System.out.println("Time " + searchTime + " found " + occurrence + " time(s) for: " + foundNames);
+        } else {
+            System.out.println("Time " + searchTime + " not found");
+        }
+    
         PrintWriter writer = new PrintWriter("time_occurrence.txt");
-        writer.println("Time Occurrence: " + occurrence);
+        if (occurrence > 0) {
+            writer.println("Time " + searchTime + " found " + occurrence + " time(s) for: " + foundNames);
+        } else {
+            writer.println("Time " + searchTime + " not found");
+        }
         writer.close();
     }
+    
 }
