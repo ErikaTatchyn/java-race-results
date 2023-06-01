@@ -15,6 +15,7 @@ public class RaceTime {
         String password = "clyderunners";
         int fail = 3;
 
+        // Prompting for password and validating it
         do {
             System.out.println("Welcome to Glasgow Clyde Runners Club.");
             System.out.println("Please enter your password to continue: ");
@@ -36,6 +37,7 @@ public class RaceTime {
     public static void menu() throws FileNotFoundException {
         int option;
 
+        // Providing options to the user and executing the chosen option
         do {
             System.out.println("\nPlease choose from the following options: ");
             System.out.println("1. Read and Display File");
@@ -73,12 +75,15 @@ public class RaceTime {
         Scanner fileScanner = new Scanner(file);
 
         int index = 0;
+
+        // Reading data from the file and storing it in the raceTimes array
         while (fileScanner.hasNextLine()) {
             String line = fileScanner.nextLine();
             String[] parts = line.split(" ");
             raceTimes[index] = parts;
             index++;
         }
+
         fileScanner.close();
 
         System.out.println("Race Times:");
@@ -91,6 +96,7 @@ public class RaceTime {
         String[][] sortedTimes = raceTimes.clone();
         boolean sorted;
 
+        // Sorting the recorded times in ascending order
         for (int i = 0; i < sortedTimes.length - 1; i++) {
             sorted = true;
             for (int j = 0; j < sortedTimes.length - i - 1; j++) {
@@ -115,9 +121,12 @@ public class RaceTime {
         }
 
         PrintWriter writer = new PrintWriter("sorted_times.txt");
+
+        // Writing the sorted times to a file
         for (String[] time : sortedTimes) {
             writer.println(Arrays.toString(time));
         }
+
         writer.close();
     }
 
@@ -125,6 +134,7 @@ public class RaceTime {
         int fastestTime = Integer.MAX_VALUE;
         String fastestName = "";
 
+        // Finding the fastest recorded time and the corresponding runner
         for (String[] time : raceTimes) {
             int raceTime = Integer.parseInt(time[2]);
             if (raceTime < fastestTime) {
@@ -136,6 +146,8 @@ public class RaceTime {
         System.out.println("Fastest Recorded Time: " + fastestTime + " seconds (" + fastestName + ")");
 
         PrintWriter writer = new PrintWriter("fastest_time.txt");
+
+        // Writing the fastest recorded time to a file
         writer.println("Fastest Recorded Time: " + fastestTime + " seconds (" + fastestName + ")");
         writer.close();
     }
@@ -144,6 +156,7 @@ public class RaceTime {
         int slowestTime = Integer.MIN_VALUE;
         String slowestName = "";
 
+        // Finding the slowest recorded time and the corresponding runner
         for (String[] time : raceTimes) {
             int raceTime = Integer.parseInt(time[2]);
             if (raceTime > slowestTime) {
@@ -155,6 +168,8 @@ public class RaceTime {
         System.out.println("Slowest Recorded Time: " + slowestTime + " seconds (" + slowestName + ")");
 
         PrintWriter writer = new PrintWriter("slowest_time.txt");
+
+        // Writing the slowest recorded time to a file
         writer.println("Slowest Recorded Time: " + slowestTime + " seconds (" + slowestName + ")");
         writer.close();
     }
@@ -165,6 +180,7 @@ public class RaceTime {
         boolean found = false;
         String foundNames = "";
 
+        // Searching for the provided time in the recorded times
         for (String[] time : raceTimes) {
             int raceTime = Integer.parseInt(time[2]);
             if (raceTime == searchTime) {
@@ -181,11 +197,14 @@ public class RaceTime {
         }
 
         PrintWriter writer = new PrintWriter("search_result.txt");
+
+        // Writing the search result to a file
         if (found) {
             writer.println("Time " + searchTime + " found for: " + foundNames);
         } else {
             writer.println("Time " + searchTime + " not found");
         }
+
         writer.close();
     }
 
@@ -201,7 +220,8 @@ public class RaceTime {
         }
         int occurrence = 0;
         String foundNames = "";
-    
+
+        // Counting the occurrence of the provided time in the recorded times
         for (String[] time : raceTimes) {
             int raceTime = Integer.parseInt(time[2]);
             if (raceTime == searchTime) {
@@ -209,21 +229,24 @@ public class RaceTime {
                 foundNames += time[0] + " " + time[1] + ", ";
             }
         }
-    
+
         if (occurrence > 0) {
             foundNames = foundNames.substring(0, foundNames.length() - 2);
             System.out.println("Time " + searchTime + " found " + occurrence + " time(s) for: " + foundNames);
         } else {
             System.out.println("Time " + searchTime + " not found");
         }
-    
+
         PrintWriter writer = new PrintWriter("time_occurrence.txt");
+
+        // Writing the time occurrence information to a file
         if (occurrence > 0) {
             writer.println("Time " + searchTime + " found " + occurrence + " time(s) for: " + foundNames);
         } else {
             writer.println("Time " + searchTime + " not found");
         }
+
         writer.close();
     }
-    
+
 }
